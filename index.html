@@ -462,22 +462,22 @@
                     
                     // Create panel container
                     const panelDiv = document.createElement('div');
-                    panelDiv.style.cssText = 'width: 100%; max-width: 500px; margin: 20px 0; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);';
+                    panelDiv.style.cssText = 'width: 100%; margin: 25px 0; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);';
                     
                     // Generate image for this panel
                     const imagePrompt = `Comic book panel style: ${panel.scene}. Indian cultural theme, vibrant colors, detailed illustration, comic art style, clean composition`;
                     const cleanPrompt = encodeURIComponent(imagePrompt);
-                    const imageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=500&height=400&nologo=true&seed=${Date.now() + i}`;
+                    const imageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1080&height=1080&nologo=true&seed=${Date.now() + i}`;
                     
                     const img = document.createElement('img');
                     img.src = imageUrl;
-                    img.style.cssText = 'width: 100%; height: 400px; object-fit: cover; display: block;';
+                    img.style.cssText = 'width: 100%; height: auto; min-height: 400px; object-fit: cover; display: block;';
                     img.alt = `Panel ${i + 1}`;
                     
                     // Create dialogue box
                     const dialogueBox = document.createElement('div');
-                    dialogueBox.style.cssText = 'padding: 15px 20px; background: #fafafa; border-top: 2px solid #e0e0e0;';
-                    dialogueBox.innerHTML = `<p style="margin: 0; color: #333; font-size: 0.95em; line-height: 1.6;"><strong>Panel ${i + 1}:</strong> ${panel.dialogue}</p>`;
+                    dialogueBox.style.cssText = 'padding: 20px 25px; background: #fafafa; border-top: 2px solid #e0e0e0;';
+                    dialogueBox.innerHTML = `<p style="margin: 0; color: #333; font-size: 1.1em; line-height: 1.7;"><strong>Panel ${i + 1}:</strong> ${panel.dialogue}</p>`;
                     
                     panelDiv.appendChild(img);
                     panelDiv.appendChild(dialogueBox);
@@ -488,7 +488,7 @@
                 const downloadBtn = document.createElement('button');
                 downloadBtn.textContent = '📥 Download All Panels';
                 downloadBtn.className = 'download-btn';
-                downloadBtn.style.cssText = 'padding: 12px 24px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 0.95em; font-weight: 500; cursor: pointer; color: #333; background: white; margin-top: 20px;';
+                downloadBtn.style.cssText = 'padding: 16px 32px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 1.05em; font-weight: 500; cursor: pointer; color: #333; background: white; margin-top: 25px;';
                 downloadBtn.onclick = () => {
                     alert('Right-click on each panel image to save them individually!');
                 };
