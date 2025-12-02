@@ -467,7 +467,7 @@
                     // Generate image for this panel
                     const imagePrompt = `Comic book panel style: ${panel.scene}. Indian cultural theme, vibrant colors, detailed illustration, comic art style, clean composition`;
                     const cleanPrompt = encodeURIComponent(imagePrompt);
-                    const imageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1080&height=1080&nologo=true&seed=${Date.now() + i}`;
+                    const imageUrl = `https://via.placeholder.com/720x1280/667eea/ffffff?text=Panel+${i+1}`;
                     
                     const img = document.createElement('img');
                     img.src = imageUrl;
