@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Comic Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: url('background.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background: white;
+            color: #333;
+            padding: 40px 30px 30px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .header p {
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            background: white;
+            padding: 30px;
+            border-radius: 0;
+            margin-bottom: 0;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+            transition: border 0.2s;
+            background: #fafafa;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #999;
+            background: white;
+        }
+
+        .api-key-section {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 3px solid #ffc107;
+        }
+
+        .api-key-section small {
+            display: block;
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 0.85em;
+        }
+
+        .quick-topics {
+            margin-top: 25px;
+        }
+
+        .quick-topics h3 {
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .topic-btn {
+            padding: 10px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+            background: white;
+            text-align: left;
+        }
+
+        .topic-btn:hover {
+            background: #fafafa;
+            border-color: #ccc;
+            color: #333;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 16px 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-top: 25px;
+        }
+
+        .generate-btn:hover {
+            background: #fafafa;
+            border-color: #ccc;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-section.active {
+            display: block;
+        }
+
+        .result-header {
+            background: white;
+            color: #333;
+            padding: 20px 30px;
+            border-radius: 0;
+            margin-bottom: 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .result-header h2 {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .comic-container {
+            background: white;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .comic-image {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 9/16;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            object-fit: cover;
+        }
+
+        .comic-story {
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+            color: #666;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f0f0f0;
+            border-top: 3px solid #999;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fff5f5;
+            color: #c53030;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 3px solid #fc8181;
+            display: none;
+            font-size: 0.95em;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .download-btn {
+            padding: 12px 24px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            background: white;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .download-btn:hover {
+            background: #fafafa;
+            border-color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CulturaX Comic Generator</h1>
+            <p>Create beautiful comics about tourism, culture & history</p>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="topic">📝 Comic Topic</label>
+                    <textarea id="topic" placeholder="e.g., The Great Wall of China's history and cultural significance"></textarea>
+                </div>
+
+                <div class="quick-topics">
+                    <h3>🌟 Popular Topics</h3>
+                    <div class="topics-grid">
+                        <button class="topic-btn" onclick="setTopic('The Taj Mahal love story and Mughal architecture')">🕌 Taj Mahal</button>
+                        <button class="topic-btn" onclick="setTopic('Jaipur Pink City and Rajput heritage')">🏰 Jaipur Heritage</button>
+                        <button class="topic-btn" onclick="setTopic('Varanasi ghats and spiritual traditions')">🕉️ Varanasi Ghats</button>
+                        <button class="topic-btn" onclick="setTopic('Kerala backwaters and Ayurveda culture')">🚣 Kerala Backwaters</button>
+                        <button class="topic-btn" onclick="setTopic('Ajanta Ellora caves ancient art')">🏛️ Ajanta Caves</button>
+                        <button class="topic-btn" onclick="setTopic('Golden Temple Amritsar Sikh heritage')">⛩️ Golden Temple</button>
+                        <button class="topic-btn" onclick="setTopic('Hampi ruins Vijayanagara Empire')">🏜️ Hampi Ruins</button>
+                        <button class="topic-btn" onclick="setTopic('Khajuraho temples ancient architecture')">🛕 Khajuraho</button>
+                        <button class="topic-btn" onclick="setTopic('Goa beaches Portuguese influence')">🏖️ Goa Culture</button>
+                        <button class="topic-btn" onclick="setTopic('Ladakh monasteries Buddhist culture')">🏔️ Ladakh Monasteries</button>
+                        <button class="topic-btn" onclick="setTopic('Mysore Palace Dasara festival')">🏛️ Mysore Palace</button>
+                        <button class="topic-btn" onclick="setTopic('Konark Sun Temple Odisha heritage')">☀️ Konark Temple</button>
+                    </div>
+                </div>
+
+                <button class="generate-btn" onclick="generateComic()">✨ Generate Comic</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Creating your comic...</p>
+            </div>
+
+            <div class="error" id="error"></div>
+
+            <div class="result-section" id="resultSection">
+                <div class="result-header">
+                    <h2>Your Comic</h2>
+                </div>
+                <div class="comic-container" id="comicContainer">
+                    <img id="comicImage" class="comic-image" alt="Generated Comic" style="display:none;">
+                    <div class="comic-story" id="comicStory"></div>
+                    <a id="downloadLink" class="download-btn" style="display:none;" download="comic.png">⬇️ Download Comic</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ IMPORTANT: Replace 'YOUR_API_KEY_HERE' with your actual Gemini API key
+        const API_KEY = 'AIzaSyB-fNygu5K_F3CsZ0bHmUSOUI2pzHtjqJU';
+        
+        // Image generation API endpoint (Imagen through Gemini)
+        const GEMINI_API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+        const IMAGE_API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict';
+
+        function setTopic(topic) {
+            document.getElementById('topic').value = topic;
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('resultSection').classList.remove('active');
+            document.getElementById('error').classList.remove('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('active');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('active');
+            hideLoading();
+        }
+
+        function formatText(text) {
+            let formatted = text
+                .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+            
+            return '<p>' + formatted + '</p>';
+        }
+
+        async function generateComic() {
+            const topic = document.getElementById('topic').value.trim();
+
+            if (!topic) {
+                showError('Please enter a comic topic');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                // Step 1: Generate comic story with detailed scene descriptions
+                const storyPrompt = `Create a 4-panel comic story about: ${topic}. 
+                Make it educational yet entertaining about Indian tourism, culture, or history.
+                
+                Format your response EXACTLY as:
+                
+                PANEL 1:
+                [Scene description for image]
+                [Dialogue/Caption]
+                
+                PANEL 2:
+                [Scene description for image]
+                [Dialogue/Caption]
+                
+                PANEL 3:
+                [Scene description for image]
+                [Dialogue/Caption]
+                
+                PANEL 4:
+                [Scene description for image]
+                [Dialogue/Caption]
+                
+                Make scene descriptions very detailed and visual. Include characters, setting, actions, and mood.`;
+
+                const storyResponse = await fetch(`${GEMINI_API_ENDPOINT}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: storyPrompt }]
+                        }]
+                    })
+                });
+
+                if (!storyResponse.ok) {
+                    throw new Error('Failed to generate story. Please check your API key.');
+                }
+
+                const storyData = await storyResponse.json();
+                const fullResponse = storyData.candidates[0].content.parts[0].text;
+
+                // Parse panels
+                const panels = [];
+                const panelMatches = fullResponse.matchAll(/PANEL\s*\d+:([\s\S]*?)(?=PANEL\s*\d+:|$)/gi);
+                
+                for (const match of panelMatches) {
+                    const panelText = match[1].trim();
+                    const lines = panelText.split('\n').filter(l => l.trim());
+                    if (lines.length >= 1) {
+                        panels.push({
+                            scene: lines[0].trim(),
+                            dialogue: lines.slice(1).join(' ').trim()
+                        });
+                    }
+                }
+
+                if (panels.length === 0) {
+                    throw new Error('Could not parse comic panels. Please try again.');
+                }
+
+                // Generate images for each panel
+                const comicContainer = document.getElementById('comicContainer');
+                comicContainer.innerHTML = ''; // Clear previous content
+                
+                for (let i = 0; i < panels.length; i++) {
+                    const panel = panels[i];
+                    
+                    // Create panel container
+                    const panelDiv = document.createElement('div');
+                    panelDiv.style.cssText = 'width: 100%; max-width: 500px; margin: 20px 0; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);';
+                    
+                    // Generate image for this panel
+                    const imagePrompt = `Comic book panel style: ${panel.scene}. Indian cultural theme, vibrant colors, detailed illustration, comic art style, clean composition`;
+                    const cleanPrompt = encodeURIComponent(imagePrompt);
+                    const imageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=500&height=400&nologo=true&seed=${Date.now() + i}`;
+                    
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.style.cssText = 'width: 100%; height: 400px; object-fit: cover; display: block;';
+                    img.alt = `Panel ${i + 1}`;
+                    
+                    // Create dialogue box
+                    const dialogueBox = document.createElement('div');
+                    dialogueBox.style.cssText = 'padding: 15px 20px; background: #fafafa; border-top: 2px solid #e0e0e0;';
+                    dialogueBox.innerHTML = `<p style="margin: 0; color: #333; font-size: 0.95em; line-height: 1.6;"><strong>Panel ${i + 1}:</strong> ${panel.dialogue}</p>`;
+                    
+                    panelDiv.appendChild(img);
+                    panelDiv.appendChild(dialogueBox);
+                    comicContainer.appendChild(panelDiv);
+                }
+                
+                // Add download all button
+                const downloadBtn = document.createElement('button');
+                downloadBtn.textContent = '📥 Download All Panels';
+                downloadBtn.className = 'download-btn';
+                downloadBtn.style.cssText = 'padding: 12px 24px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 0.95em; font-weight: 500; cursor: pointer; color: #333; background: white; margin-top: 20px;';
+                downloadBtn.onclick = () => {
+                    alert('Right-click on each panel image to save them individually!');
+                };
+                comicContainer.appendChild(downloadBtn);
+                document.getElementById('resultSection').classList.add('active');
+                hideLoading();
+
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
